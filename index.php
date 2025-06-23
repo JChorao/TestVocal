@@ -1,4 +1,5 @@
 <?php
+        
         // Versão simplificada sem dependências Azure para teste
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
@@ -12,14 +13,9 @@
         ];
 
         function get_transcricoes() {
-            // Simulação de dados para testar
-            return [
-                [
-                    'filename' => 'teste_audio.wav',
-                    'transcription' => 'Esta é uma transcrição de teste.',
-                    'translation' => 'This is a test transcription.'
-                ]
-            ];
+            // Simulação de dados
+            $response = file_get_contents('https://vocalscript-function.azurewebsites.net/api/transcribe?url=LINK_DO_AUDIO');
+            return json_decode($response, true);
         }
 
         function upload_para_blob($containerName, $blobName, $filePath) {
@@ -37,6 +33,7 @@
     <title>🎹 VocalScript - Transcrição de Áudio para Texto</title>
     <style>
         body {
+            background-color:rgb(39, 40, 40);
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;

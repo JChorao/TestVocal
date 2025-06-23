@@ -1,40 +1,54 @@
 <?php
-        
-        // Versão simplificada sem dependências Azure para teste
-        require_once _DIR_ . '/vendor/autoload.php';
 
-        $dotenv = Dotenv\Dotenv::createImmutable(_DIR_);
-        $dotenv->load();
+require_once __DIR__ . '/vendor/autoload.php';
 
-        $functionUrl = $_ENV['AZURE_FUNCTION_URL'];
+use MicrosoftAzure\Storage\Blob\BlobRestProxy;
+use MicrosoftAzure\Storage\Blob\Models\CreateBlockBlobOptions;
+use MicrosoftAzure\Storage\Common\Exceptions\ServiceException;
 
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
-        $url = $_ENV['AZURE_FUNCTION_URL'] . '?url=' . urlencode($audio_url);
-        $response = file_get_contents($url);
+$connectionString = $_ENV['AZURE_STORAGE_CONNECTION_STRING'];
+$functionUrl = $_ENV['AZURE_FUNCTION_URL'];
 
-        error_reporting(E_ALL);
-        ini_set('display_errors', 1);
+$idioma_map = [
+    "🇵🇹 Português (PT)" => "pt-PT"
+];
 
-        $idioma_map = [
-            "🇵🇹 Português (PT)" => "pt-PT",
-            "🇧🇷 Português (BR)" => "pt-BR",
-            "🇺🇸 English (US)" => "en-US",
-            "🇪🇸 Español (ES)" => "es-ES",
-            "🇫🇷 Français (FR)" => "fr-FR"
-        ];
+function upload_para_blob($connectionString, $containerName, $blobName, $filePath) {
+    try {
+        $blobClient = BlobRestProxy::createBlobService($connectionString);
 
-        function get_transcricoes() {
-            // Simulação de dados
-            $response = file_get_contents('https://vocalscript-function.azurewebsites.net/api/transcribe?url=LINK_DO_AUDIO');
-            return json_decode($response, true);
-        }
+        $content = fopen($filePath, "r");
 
-        function upload_para_blob($containerName, $blobName, $filePath) {
-            // Simulação de upload
-            echo "<div class='info'>🔄 Simulação: Upload de '$blobName' para container '$containerName'</div>";
-            return true;
-        }
-    ?>
+        $options = new CreateBlockBlobOptions();
+        $options->setContentType(mime_content_type($filePath));
+
+        $blobClient->createBlockBlob($containerName, $blobName, $content, $options);
+
+        echo "<div class='success'>✅ Upload de '$blobName' para container '$containerName' concluído com sucesso!</div>";
+        return true;
+    } catch (ServiceException $e) {
+        echo "<div class='error'>❌ Erro: " . $e->getMessage() . "</div>";
+        return false;
+    }
+}
+
+function get_transcricoes($audio_url) {
+    global $functionUrl;
+    $url = $functionUrl . '?url=' . urlencode($audio_url);
+
+    echo "<div class='info'>functionURL = $functionUrl</div>";
+    echo "<div class='info'>url = $url</div>";
+
+    $response = file_get_contents($url);
+    echo "<div class='info'>response = $response</div>";
+
+    return json_decode($response, true);
+}
+
+?>
 
 <!DOCTYPE html>
 <html lang="pt">
@@ -203,8 +217,11 @@
                 
                 $blob_name = $idioma_code . '__' . uniqid() . '.' . $extension;
                 
-                if (upload_para_blob("audios", $blob_name, $tmp_name)) {
+                if (upload_para_blob($connectionString, "audios", $blob_name, $tmp_name)) {
                     echo "<div class='success'>✅ Ficheiro '$blob_name' processado com sucesso!</div>";
+                    $audio_url = "https://<sua-conta>.blob.core.windows.net/audios/$blob_name";
+                    $transcricao = get_transcricoes($audio_url);
+                    // Exibir transcrição
                 } else {
                     echo "<div class='error'>❌ Erro ao processar o ficheiro</div>";
                 }

@@ -166,6 +166,14 @@ AI_CONNECTION_STRING=$(az monitor app-insights component show \
     --query "connectionString" \
     --output tsv)
 
+# Create App Service Plan
+az appservice plan create \
+    --name "asp-vocalscript" \
+    --resource-group $RESOURCE_GROUP \
+    --location $LOCATION \
+    --is-linux \
+    --sku B1
+
 # Create Function App
 az functionapp create \
     --name "vocalscript-function" \
@@ -175,7 +183,6 @@ az functionapp create \
     --functions-version 4 \
     --os-type Linux \
     --deployment-container-image-name "joaochorao/vocalscript-function:latest"
-
 
 # Configure Function App settings
 az functionapp config appsettings set \

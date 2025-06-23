@@ -1,5 +1,10 @@
 <?php
 
+require_once __DIR__ . '/vendor/autoload.php';
+
+use MicrosoftAzure\Storage\Blob\BlobRestProxy;
+use MicrosoftAzure\Storage\Blob\Models\CreateBlockBlobOptions;
+use MicrosoftAzure\Storage\Common\Exceptions\ServiceException;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -11,7 +16,8 @@ $idioma_map = [
     "🇵🇹 Português (PT)" => "pt-PT"
 ];
 
-function upload_para_blob($connectionString, $containerName, $blobName, $filePath) {
+function upload_para_blob($connectionString, $containerName, $blobName, $filePath)
+{
     try {
         $blobClient = BlobRestProxy::createBlobService($connectionString);
 
@@ -30,7 +36,9 @@ function upload_para_blob($connectionString, $containerName, $blobName, $filePat
     }
 }
 
-function get_transcricoes($audio_url) {
+
+function get_transcricoes($audio_url)
+{
     global $functionUrl;
     $url = $functionUrl . '?url=' . urlencode($audio_url);
 
@@ -47,25 +55,28 @@ function get_transcricoes($audio_url) {
 
 <!DOCTYPE html>
 <html lang="pt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎹 VocalScript - Transcrição de Áudio para Texto</title>
     <style>
         body {
-            background-color:rgb(50, 55, 50);
+            background-color: rgb(50, 55, 50);
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
         }
+
         .container {
             background-color: white;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+
         .error {
             color: #d32f2f;
             background-color: #ffebee;
@@ -75,6 +86,7 @@ function get_transcricoes($audio_url) {
             border-radius: 8px;
             border-left: 5px solid #d32f2f;
         }
+
         .success {
             color: #2e7d32;
             background-color: #e8f5e8;
@@ -84,6 +96,7 @@ function get_transcricoes($audio_url) {
             border-radius: 8px;
             border-left: 5px solid #2e7d32;
         }
+
         .info {
             color: #1976d2;
             background-color: #e3f2fd;
@@ -93,16 +106,20 @@ function get_transcricoes($audio_url) {
             border-radius: 8px;
             border-left: 5px solid #1976d2;
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
             color: #333;
         }
-        select, input[type="file"] {
+
+        select,
+        input[type="file"] {
             width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
@@ -110,10 +127,13 @@ function get_transcricoes($audio_url) {
             font-size: 16px;
             transition: border-color 0.3s;
         }
-        select:focus, input[type="file"]:focus {
+
+        select:focus,
+        input[type="file"]:focus {
             outline: none;
             border-color: rgb(50, 55, 50);
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -121,21 +141,26 @@ function get_transcricoes($audio_url) {
             background-color: white;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        th, td {
+
+        th,
+        td {
             padding: 15px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
+
         th {
             background-color: rgb(50, 55, 50);
             color: white;
             font-weight: bold;
         }
+
         tr:hover {
             background-color: #f5f5f5;
         }
+
         .button {
             background: linear-gradient(45deg, rgb(50, 55, 50), rgb(50, 55, 50));
             border: none;
@@ -149,18 +174,21 @@ function get_transcricoes($audio_url) {
             cursor: pointer;
             border-radius: 8px;
             transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
+
         .button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
+
         h1 {
             color: #2c3e50;
             text-align: center;
             margin-bottom: 30px;
             font-size: 2.5em;
         }
+
         h2 {
             color: #34495e;
             border-bottom: 3px solid rgb(50, 55, 50);
@@ -169,6 +197,7 @@ function get_transcricoes($audio_url) {
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🎹 VocalScript - Transcrição de Áudio para Texto</h1>
@@ -182,12 +211,12 @@ function get_transcricoes($audio_url) {
                     <?php endforeach; ?>
                 </select>
             </div>
-            
+
             <div class="form-group">
                 <label for="audio_file">📤 Faz upload de um ficheiro .mp3 ou .wav:</label>
                 <input type="file" name="audio_file" id="audio_file" accept=".mp3,.wav">
             </div>
-            
+
             <input type="submit" name="submit" value="🚀 Enviar" class="button">
         </form>
 
@@ -195,23 +224,23 @@ function get_transcricoes($audio_url) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['audio_file'])) {
             $idioma_code = $_POST['idioma'];
             $file = $_FILES['audio_file'];
-            
+
             echo "<div class='info'>📝 Idioma selecionado: " . htmlspecialchars($idioma_code) . "</div>";
-            
+
             if ($file['error'] === UPLOAD_ERR_OK) {
                 $tmp_name = $file['tmp_name'];
                 $original_name = $file['name'];
                 $extension = pathinfo($original_name, PATHINFO_EXTENSION);
-                
-                echo "<div class='info'>📁 Ficheiro recebido: " . htmlspecialchars($original_name) . " (" . round($file['size']/1024, 2) . " KB)</div>";
-                
+
+                echo "<div class='info'>📁 Ficheiro recebido: " . htmlspecialchars($original_name) . " (" . round($file['size'] / 1024, 2) . " KB)</div>";
+
                 // For MP3 files, we would need to convert to WAV
                 if (strtolower($extension) === 'mp3') {
                     echo "<div class='info'>🔄 Ficheiro .mp3 detectado - conversão para WAV seria necessária</div>";
                 }
-                
+
                 $blob_name = $idioma_code . '__' . uniqid() . '.' . $extension;
-                
+
                 if (upload_para_blob($connectionString, "audios", $blob_name, $tmp_name)) {
                     echo "<div class='success'>✅ Ficheiro '$blob_name' processado com sucesso!</div>";
                     $audio_url = "https://<sua-conta>.blob.core.windows.net/audios/$blob_name";
@@ -230,7 +259,7 @@ function get_transcricoes($audio_url) {
                     UPLOAD_ERR_CANT_WRITE => 'Erro de escrita no disco',
                     UPLOAD_ERR_EXTENSION => 'Upload bloqueado por extensão'
                 ];
-                
+
                 $error_msg = $error_messages[$file['error']] ?? 'Erro desconhecido';
                 echo "<div class='error'>❌ Erro no upload: $error_msg</div>";
             }
@@ -238,7 +267,7 @@ function get_transcricoes($audio_url) {
         ?>
 
         <h2>📄 Transcrições Guardadas</h2>
-        
+
         <?php
         $transcricoes = get_transcricoes();
         if (!empty($transcricoes) || get_transcricoes() == null) {
@@ -248,7 +277,7 @@ function get_transcricoes($audio_url) {
                 echo "<th>🌐 Tradução</th>";
             }
             echo "</tr>";
-            
+
             foreach ($transcricoes as $row) {
                 echo "<tr>";
                 echo "<td>" . htmlspecialchars($row['filename'] ?? '') . "</td>";
@@ -258,16 +287,16 @@ function get_transcricoes($audio_url) {
                 }
                 echo "</tr>";
             }
-            
+
             echo "</table>";
-            
+
             // CSV Export
             $csv = "Filename,Transcription";
             if (isset($transcricoes[0]['translation'])) {
                 $csv .= ",Translation";
             }
             $csv .= "\n";
-            
+
             foreach ($transcricoes as $row) {
                 $csv .= '"' . str_replace('"', '""', $row['filename'] ?? '') . '",';
                 $csv .= '"' . str_replace('"', '""', $row['transcription'] ?? '') . '"';
@@ -276,10 +305,10 @@ function get_transcricoes($audio_url) {
                 }
                 $csv .= "\n";
             }
-            
+
             $csv_encoded = base64_encode($csv);
             echo "<a href='data:text/csv;base64,$csv_encoded' download='transcricoes.csv' class='button'>📊 Exportar CSV</a>";
-            
+
             // Translation downloads
             foreach ($transcricoes as $row) {
                 if (isset($row['translation'])) {
@@ -305,4 +334,5 @@ function get_transcricoes($audio_url) {
         </div>
     </div>
 </body>
+
 </html>

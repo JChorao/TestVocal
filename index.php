@@ -1,10 +1,5 @@
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
-
-use MicrosoftAzure\Storage\Blob\BlobRestProxy;
-use MicrosoftAzure\Storage\Blob\Models\CreateBlockBlobOptions;
-use MicrosoftAzure\Storage\Common\Exceptions\ServiceException;
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();

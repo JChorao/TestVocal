@@ -269,8 +269,8 @@ function get_transcricoes($audio_url)
         <h2>📄 Transcrições Guardadas</h2>
 
         <?php
-        $transcricoes = get_transcricoes();
-        if (!empty($transcricoes) || get_transcricoes() == null) {
+        $transcricoes = get_transcricoes($audio_url ?? '');
+        if (!empty($transcricoes)) {
             echo "<table>";
             echo "<tr><th>📁 Ficheiro</th><th>📝 Transcrição</th>";
             if (isset($transcricoes[0]['translation'])) {

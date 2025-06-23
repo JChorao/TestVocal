@@ -1,18 +1,15 @@
-#!/bin/bash
 
-#-----------------------------------------------------
-# Azure Deployment - App Service Only with GitHub Deployment
-#-----------------------------------------------------
-
-LOCATION="FranceCentral"
+# Variables
+LOCATION="FranceCentral"  # Change to your desired location
 RESOURCE_GROUP="rg-vocalscript"
 
-# az login  # Uncomment if needed
+# Login to Azure (uncomment if needed)
+# az login
 
 # Create Resource Group
 az group create --name $RESOURCE_GROUP --location $LOCATION
 
-# Storage Account for files
+# Create Storage Account for audio
 az storage account create \
     --name "vocalstoragedb" \
     --resource-group $RESOURCE_GROUP \
@@ -21,18 +18,28 @@ az storage account create \
     --min-tls-version TLS1_2 \
     --allow-blob-public-access false
 
+# Get storage connection string
 STORAGE_CONNECTION_STRING=$(az storage account show-connection-string \
     --name "vocalstoragedb" \
     --resource-group $RESOURCE_GROUP \
     --output tsv)
 
+# Create audio container
 az storage container create \
     --name "audios" \
     --account-name "vocalstoragedb" \
     --auth-mode login \
     --public-access off
 
-# Cosmos DB
+# Create Container Registry
+az acr create \
+    --name "vocalscriptacr" \
+    --resource-group $RESOURCE_GROUP \
+    --location $LOCATION \
+    --sku Basic \
+    --admin-enabled true
+
+# Create Cosmos DB Account
 az cosmosdb create \
     --name "vocal-cosmosdb" \
     --resource-group $RESOURCE_GROUP \
@@ -41,11 +48,13 @@ az cosmosdb create \
     --default-consistency-level "Session" \
     --enable-free-tier false
 
+# Create Cosmos DB Database
 az cosmosdb sql database create \
     --account-name "vocal-cosmosdb" \
     --name "TranscricoesDB" \
     --resource-group $RESOURCE_GROUP
 
+# Create Cosmos DB Container
 az cosmosdb sql container create \
     --account-name "vocal-cosmosdb" \
     --database-name "TranscricoesDB" \
@@ -53,6 +62,7 @@ az cosmosdb sql container create \
     --resource-group $RESOURCE_GROUP \
     --partition-key-path "/id"
 
+# Get Cosmos DB connection string
 COSMOS_CONNECTION_STRING=$(az cosmosdb keys list \
     --name "vocal-cosmosdb" \
     --resource-group $RESOURCE_GROUP \
@@ -60,31 +70,64 @@ COSMOS_CONNECTION_STRING=$(az cosmosdb keys list \
     --query "connectionStrings[0].connectionString" \
     --output tsv)
 
-# App Service Plan
-az appservice plan create \
-    --name "asp-vocalscript" \
-    --resource-group $RESOURCE_GROUP \
-    --location $LOCATION \
-    --is-linux \
-    --sku B1
-
-# Web App (PHP)
-az webapp create \
-    --resource-group $RESOURCE_GROUP \
-    --plan asp-vocalscript \
-    --name vocalscript-app 
-
-# Cognitive Services (Speech-to-Text)
+# Create Translator Service
 az cognitiveservices account create \
-    --name "vocal-speech-to-text" \
+    --name "vocaltranslator$RAND_SUFFIX" \
     --resource-group $RESOURCE_GROUP \
     --location $LOCATION \
-    --kind SpeechServices \
-    --sku S0 \
+    --kind TextTranslation \
+    --sku S1 \
     --yes
 
-# Final output
+# Create Storage Account for functions
+az storage account create \
+    --name "functionstoragebd" \
+    --resource-group $RESOURCE_GROUP \
+    --location $LOCATION \
+    --sku Standard_LRS
+
+# Create Application Insights
+az monitor app-insights component create \
+    --app "vocalscript-func-ai" \
+    --location $LOCATION \
+    --resource-group $RESOURCE_GROUP \
+    --application-type web
+
+# Get App Insights connection string
+AI_CONNECTION_STRING=$(az monitor app-insights component show \
+    --app "vocalscript-func-ai" \
+    --resource-group $RESOURCE_GROUP \
+    --query "connectionString" \
+    --output tsv)
+
+# Create Function App
+az functionapp create \
+    --name "vocalscript-function" \
+    --resource-group $RESOURCE_GROUP \
+    --storage-account "functionstoragebd" \
+    --plan "asp-vocalscript" \
+    --runtime "node" \
+    --functions-version 4 \
+    --os-type Linux \
+    --runtime-version 18 \
+    --docker-custom-image-name "joaochorao/vocalscript-function:latest"
+
+# Configure Function App settings
+az functionapp config appsettings set \
+    --name "vocalscript-function" \
+    --resource-group $RESOURCE_GROUP \
+    --settings \
+        "FUNCTIONS_WORKER_RUNTIME=node" \
+        "AzureWebJobsStorage=$STORAGE_CONNECTION_STRING" \
+        "APPLICATIONINSIGHTS_CONNECTION_STRING=$AI_CONNECTION_STRING"
+
+# Assign identity to function app
+az functionapp identity assign \
+    --name "vocalscript-function" \
+    --resource-group $RESOURCE_GROUP
+
+# Output important information
 echo "Deployment completed!"
-echo "App URL: https://vocalscript-app.azurewebsites.net"
-echo "Cosmos DB Connection: $COSMOS_CONNECTION_STRING"
-echo "Storage Connection: $STORAGE_CONNECTION_STRING"
+echo "Cosmos DB Connection String: $COSMOS_CONNECTION_STRING;DatabaseName=TranscricoesDB;"
+echo "Storage Connection String: $STORAGE_CONNECTION_STRING"
+echo "Frontend URL: https://vocalscript-frontend.azurewebsites.net"

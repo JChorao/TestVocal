@@ -33,7 +33,7 @@
     <title>🎹 VocalScript - Transcrição de Áudio para Texto</title>
     <style>
         body {
-            background-color:rgb(39, 40, 40);
+            background-color:rgb(50, 55, 50);
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
@@ -92,7 +92,7 @@
         }
         select:focus, input[type="file"]:focus {
             outline: none;
-            border-color: #4CAF50;
+            border-color: rgb(50, 55, 50);
         }
         table {
             width: 100%;
@@ -109,7 +109,7 @@
             border-bottom: 1px solid #ddd;
         }
         th {
-            background-color: #4CAF50;
+            background-color: rgb(50, 55, 50);
             color: white;
             font-weight: bold;
         }
@@ -117,7 +117,7 @@
             background-color: #f5f5f5;
         }
         .button {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
+            background: linear-gradient(45deg, rgb(50, 55, 50), rgb(50, 55, 50));
             border: none;
             color: white;
             padding: 15px 25px;
@@ -143,7 +143,7 @@
         }
         h2 {
             color: #34495e;
-            border-bottom: 3px solid #4CAF50;
+            border-bottom: 3px solid rgb(50, 55, 50);
             padding-bottom: 10px;
             margin-top: 40px;
         }
@@ -272,7 +272,7 @@
         }
         ?>
 
-        <div style="margin-top: 40px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 5px solid #4CAF50;">
+        <div style="margin-top: 40px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 5px solid rgb(50, 55, 50);">
             <h3>ℹ️ Informações:</h3>
             <ul>
                 <li>Esta é uma versão de demonstração</li>

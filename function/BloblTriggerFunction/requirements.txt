@@ -1,0 +1,15 @@
+azure-cognitiveservices-speech==1.43.0
+azure-core==1.33.0
+azure-cosmos==4.9.0
+azure-storage-blob==12.25.1
+certifi==2025.1.31
+cffi==1.17.1
+charset-normalizer==3.4.1
+cryptography==44.0.2
+idna==3.10
+isodate==0.7.2
+pycparser==2.22
+requests==2.32.3
+six==1.17.0
+typing_extensions==4.13.1
+urllib3==2.3.0

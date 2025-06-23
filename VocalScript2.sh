@@ -131,3 +131,11 @@ echo "Deployment completed!"
 echo "Cosmos DB Connection String: $COSMOS_CONNECTION_STRING;DatabaseName=TranscricoesDB;"
 echo "Storage Connection String: $STORAGE_CONNECTION_STRING"
 echo "Frontend URL: https://vocalscript-frontend.azurewebsites.net"
+
+cat <<EOF > ".env"
+AZURE_FUNCTION_URL=https://vocalscript-function.azurewebsites.net/api/transcribe
+AZURE_STORAGE_ACCOUNT=vocalstoragedb
+AZURE_STORAGE_KEY=$STORAGE_CONNECTION_STRING
+AZURE_STORAGE_CONTAINER=audios
+AZURE_REGION=$LOCATION
+EOF

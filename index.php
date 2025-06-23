@@ -1,6 +1,17 @@
 <?php
         
         // Versão simplificada sem dependências Azure para teste
+        require_once _DIR_ . '/vendor/autoload.php';
+
+        $dotenv = Dotenv\Dotenv::createImmutable(_DIR_);
+        $dotenv->load();
+
+        $functionUrl = $_ENV['AZURE_FUNCTION_URL'];
+
+
+        $url = $_ENV['AZURE_FUNCTION_URL'] . '?url=' . urlencode($audio_url);
+        $response = file_get_contents($url);
+
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
 
@@ -218,8 +229,7 @@
         
         <?php
         $transcricoes = get_transcricoes();
-        
-        if (!empty($transcricoes)) {
+        if (!empty($transcricoes) || get_transcricoes() == null) {
             echo "<table>";
             echo "<tr><th>📁 Ficheiro</th><th>📝 Transcrição</th>";
             if (isset($transcricoes[0]['translation'])) {

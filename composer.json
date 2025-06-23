@@ -4,7 +4,8 @@
     "type": "project",
     "require": {
         "php": ">=7.4",
-        "microsoft/azure-storage-blob": "^1.5"
+        "microsoft/azure-storage-blob": "^1.5",
+        "vlucas/phpdotenv": "^5.5"
     },
     "autoload": {
         "psr-4": {

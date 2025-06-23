@@ -1,0 +1,19 @@
+{
+    "name": "vocalscript/transcription",
+    "description": "VocalScript - Transcrição de Áudio para Texto com Azure",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "microsoft/azure-storage-blob": "^1.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "VocalScript\\": "src/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "echo 'Dependências instaladas com sucesso!'"
+        ]
+    }
+}

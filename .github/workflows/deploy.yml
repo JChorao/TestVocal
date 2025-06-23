@@ -1,0 +1,42 @@
+name: Build and Deploy to Azure Web App
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  ACR_NAME: vocalscriptacr
+  ACR_LOGIN_SERVER: vocalscriptacr.azurecr.io
+  IMAGE_NAME: vocalscript-app
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🔁 Checkout repositório
+      uses: actions/checkout@v3
+
+    - name: 🔐 Login no Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: 🔐 Login no Azure Container Registry
+      run: |
+        echo "${{ secrets.ACR_PASSWORD }}" | docker login $ACR_LOGIN_SERVER -u ${{ secrets.ACR_USERNAME }} --password-stdin
+
+    - name: 🐳 Build da imagem Docker
+      run: |
+        docker build -t $ACR_LOGIN_SERVER/$IMAGE_NAME:latest ./VocalScript
+
+    - name: 🚀 Push da imagem para ACR
+      run: |
+        docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:latest
+
+    - name: 🚀 Deploy para o Azure Web App (via container)
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: vocalscript-app
+        images: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
